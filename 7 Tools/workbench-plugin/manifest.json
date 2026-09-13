@@ -1,0 +1,9 @@
+{
+  "id": "re-workbench-local",
+  "name": "RE Workbench",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Read Confluence pages, edit local copies, compare changes and archive your work.",
+  "author": "RE Workbench",
+  "isDesktopOnly": true
+}

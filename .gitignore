@@ -1,0 +1,35 @@
+.DS_Store
+__pycache__/
+*.pyc
+.obsidian/
+.rewb-history/
+.rewb/
+.trash/
+.venv/
+7 Tools/.local/
+7 Tools/.confluence-runtime/
+7 Tools/.runtime/
+7 Tools/confluence-source.json
+7 Tools/Source order.md
+1 Sources/**
+!1 Sources/.gitkeep
+1 Working files/**
+3 Drafts/
+2 Saved versions/
+4 Notes/**
+!4 Notes/.gitkeep
+5 Archive/**
+!5 Archive/.gitkeep
+6 Import log/**
+!6 Import log/.gitkeep
+
+# Local credentials, dependencies and generated distribution files
+.env
+.env.*
+!.env.example
+node_modules/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.zip
+*.tar.gz

@@ -1,0 +1,30 @@
+{
+  "plugins": {
+    "obsidian-file-color": {
+      "cascadeColors": true,
+      "colorBackground": true,
+      "palette": [
+        {
+          "id": "working-blue",
+          "name": "Working files",
+          "value": "#64788A"
+        }
+      ],
+      "fileColors": [
+        {
+          "path": "1 Working files",
+          "color": "working-blue"
+        }
+      ]
+    },
+    "custom-sort": {
+      "additionalSortspecFile": "7 Tools/Source order.md",
+      "suspended": false,
+      "automaticBookmarksIntegration": false
+    }
+  },
+  "editor": {
+    "showInlineTitle": true,
+    "propertiesInDocument": "visible"
+  }
+}

@@ -1,0 +1,2 @@
+beautifulsoup4==4.14.3
+markdownify==1.2.0

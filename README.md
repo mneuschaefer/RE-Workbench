@@ -12,7 +12,7 @@ RE Workbench gives product owners and requirements engineers a local workspace t
 
 ## Why I built this
 
-When I work on requirements in collaborative projects, I want to try different wording, compare alternatives or ask AI for a review before updating Confluence or other shared tools. RE Workbench gives me space to do that locally while keeping the connection to the source.
+When requirements are shared with a team—in Confluence, GitHub or another tool—I want room to try different wording, compare alternatives or ask AI for a review before changing what everyone else works with. That is why I built RE Workbench: a local space to work through changes while keeping the connection to the shared source.
 
 I know there are tools that automate the whole workflow in one place. Here, I find a little friction useful: transferring changes is a separate step where I check the requirements again for consistency and decide what belongs in the shared documentation.
 

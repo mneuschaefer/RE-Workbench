@@ -510,8 +510,9 @@ class WorkbenchStore {
       if (!v?.nativeWorking) throw new StoreError('Not a native working folder.', 'INVALID_REF');
       const entries = await this._tree('variant:' + variantId, true, true);
       if (sha(JSON.stringify(entries)) !== expectedToken) throw new StoreError('Working files changed. Review the reset again.', 'STALE_REVIEW');
-      const target = clone(await this._tree(targetRef, true, true));
-      if (target.some(e => e.missing)) throw new StoreError('Target includes unavailable files; reset cancelled.', 'WORKING_FILE_MISSING');
+      const requestedTarget = clone(await this._tree(targetRef, true, true));
+      const unavailableTarget = requestedTarget.filter(entry => entry.missing);
+      const target = requestedTarget.filter(entry => !entry.missing);
       const baseId = this._sourceForRef(targetRef);
       const recovery = await this._saveVersion('variant:' + variantId, 'Recovery ' + new Date().toISOString().replace('T', ' ').replace('Z', ''),true);
       let archivePath = null;
@@ -553,9 +554,21 @@ class WorkbenchStore {
           const contentHash = await this._writeBlob(content);
           v.overlays[entry.key] = {...entry, contentHash, normalizedHash:sha(content), workspacePath:relative, materialized:true, origin:'variant'};
         }
+        // A page retained for source traceability but no longer returned as
+        // current is absent from an explicitly replaced working tree.
+        for(const entry of unavailableTarget) {
+          delete entry.workspacePath;
+          v.overlays[entry.key]={...entry,missing:false,deleted:true,materialized:false,origin:'variant'};
+        }
+        const workingRoot=within(this.vault,v.contentFolder);
+        const pruneEmpty=async directory=>{
+          for(const child of await fs.readdir(directory,{withFileTypes:true}))if(child.isDirectory()&&!child.isSymbolicLink())await pruneEmpty(path.join(directory,child.name));
+          if(directory!==workingRoot)try{await fs.rmdir(directory);}catch(error){if(!['ENOENT','ENOTEMPTY','EEXIST'].includes(error.code))throw error;}
+        };
+        await pruneEmpty(workingRoot);
         v.objectRef = await this._retainVariant(v);
         await this._save();
-        return { recoveryVersionId:recovery.id, archivePath };
+        return { recoveryVersionId:recovery.id, archivePath, removedUnavailable:unavailableTarget.length };
       });
     });
   }

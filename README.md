@@ -29,7 +29,7 @@ There are already wonderful tools that automate the whole workflow in one place.
 - **For product owners, requirements engineers and business analysts** revising requirements in collaborative projects.
 - **A Mac.** The current setup is built and checked on macOS. Other operating systems need setup changes and their own testing.
 - **Your own active AI-agent access.** Setup assumes an advanced model that can follow multi-step instructions, work with local files and run tools. Basic chat access alone is not enough; no AI account or model is included.
-- **A project and access to its requirements.** v0.1 imports from **Confluence Cloud**. Other sources require adapting the importer; they are not supported out of the box.
+- **A project and access to its requirements.** v0.1 imports from **Confluence Cloud and Confluence Data Center**. Other sources require adapting the importer; they are not supported out of the box.
 - **Basic Obsidian knowledge.** Be comfortable opening a vault, editing notes and enabling plugins.
 - **One dedicated vault per project and Confluence space.** Use it only as that project's requirements workbench.
 
@@ -146,7 +146,7 @@ Confluence → read-only import → source snapshot → local working files
 Confluence ← deliberate transfer ← comparison and review
 ```
 
-**73 Node tests and 12 Python importer tests** cover the MVP. See [test commands](7%20Tools/README.md#verify-a-development-copy) and the [validation record](7%20Tools/Validation.md) for completed checks and outstanding live-connection testing.
+**83 Node tests and 26 Python importer tests** cover the MVP. See [test commands](7%20Tools/README.md#verify-a-development-copy) and the [validation record](7%20Tools/Validation.md) for completed checks and outstanding live-connection testing.
 
 ## Product case study
 
@@ -154,7 +154,7 @@ Confluence ← deliberate transfer ← comparison and review
 | --- | --- |
 | Problem | AI-assisted editing of shared requirements can lose source context, draft status and publication control. |
 | Product decisions | Read-only ingestion, separate sources and working files, explicit replacement, recoverable checkpoints and human-reviewed publication. Source evidence remains authoritative. |
-| Current result | A local MVP with an Obsidian plugin, importer, comparison, archiving, example skills and templates, covered by 85 automated tests. |
+| Current result | A local MVP with an Obsidian plugin, importer, comparison, archiving, example skills and templates, covered by 109 automated tests. |
 | Next hypothesis | For larger collections, a wiki and hybrid retrieval may improve context selection. |
 
 ## 🧭 Roadmap
@@ -167,9 +167,9 @@ Planned beyond v0.1:
 
 ## MVP limits
 
-Confluence pages are converted to Markdown. Complex macros, images and attachments are not fully supported, and conversion warnings need review. The workflow does not promise a lossless round trip. The importer retains missing source pages and flags them rather than treating their absence as deletion.
+Confluence pages are converted to Markdown. Complex macros, images and attachments are not fully supported, and conversion warnings need review. The workflow does not promise a lossless round trip. The importer retains missing source pages for traceability. After a successful download, explicit replacement removes pages no longer returned from the working tree, with or without a visible archive according to your choice. Failed downloads do not start replacement.
 
-This public beta is a local, macOS-focused open-source MVP. Windows, Linux and Confluence Data Center setup are not covered. It has no background sync, automatic publishing or shared editing service. File replacement handles errors with rollback, but storage is not crash-atomic and does not coordinate simultaneous writers.
+This public beta is a local, macOS-focused open-source MVP. Windows and Linux setup are not covered. It has no background sync, automatic publishing or shared editing service. File replacement handles errors with rollback, but storage is not crash-atomic and does not coordinate simultaneous writers.
 
 [Technical setup and recommended plugins](7%20Tools/README.md) · [Report a problem](https://github.com/mneuschaefer/RE-Workbench/issues)
 

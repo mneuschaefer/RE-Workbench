@@ -18,5 +18,5 @@ test('replacement summary uses local-to-source direction and counts renames once
  const {summarizeReplacement:s}=require('./native');
  const result=s({changed:['a'],renamed:['a'],added:['remote'],removed:['local'],missing:[]});
  assert.equal(result.different,1);assert.equal(result.remoteOnly,1);assert.equal(result.localOnly,1);assert.equal(result.matches,false);
- assert.equal(s({}).matches,true);assert.equal(s({missing:['unknown']}).matches,false);
+ assert.equal(s({}).matches,true);const missing=s({missing:['unknown']});assert.equal(missing.matches,false);assert.equal(missing.unavailable,1);assert.match(missing.lines.at(-1),/no longer returned as current/);
 });

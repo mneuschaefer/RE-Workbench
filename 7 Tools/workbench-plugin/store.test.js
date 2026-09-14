@@ -460,6 +460,26 @@ test('native deletion is explicit in export and recovered by resetting without e
  assert.match(await fs.readFile(path.join(f.root,edit.path),'utf8'),/one reviewer/);
 });
 
+test('explicit replacement removes unavailable pages with either archive choice and keeps recovery',async t=>{
+ for(const archive of [true,false])await t.test('archive='+archive,async t=>{
+  const f=await variantFixture(t);const v=await f.store.createVariant('Working','sources',{nativeWorking:true});const edit=await f.store.editInVariant(v.id,f.key);
+  await fs.writeFile(path.join(f.root,edit.path),'My local revision');
+  const attachment=path.join(f.root,v.contentFolder,'Attachments','diagram.png');await fs.mkdir(path.dirname(attachment),{recursive:true});await fs.writeFile(attachment,'unchanged attachment');
+  const content=await fs.readFile(path.join(f.root,'1 Sources/Confluence/Project/Requirement.md'),'utf8');
+  await fs.writeFile(path.join(f.root,'6 Import log/Confluence/manifest.json'),JSON.stringify({pages:[{id:'1',title:'Requirement',path:'1 Sources/Confluence/Project/Requirement.md',sha256:hash(content),not_seen_at:new Date().toISOString()}]}));
+  await f.store.captureSources();const result=await f.store.replaceNativeWorking(v.id,'sources',await f.store.nativeWorkingToken(v.id),{archive});
+  await assert.rejects(fs.access(path.join(f.root,edit.path)));assert.equal((await f.store.getTree('variant:'+v.id)).length,0);assert.equal(result.removedUnavailable,1);
+  assert.equal((await f.store.readFile('version:'+result.recoveryVersionId,f.key)).content,'My local revision');
+  assert.equal(await fs.readFile(attachment,'utf8'),'unchanged attachment');
+  assert.equal((await f.store.getTree('sources'))[0].missing,true);
+  if(archive){assert.ok(result.archivePath);const rel=edit.path.slice(v.contentFolder.length+1);assert.equal(await fs.readFile(path.join(f.root,result.archivePath,'Files',rel),'utf8'),'My local revision');}
+  else {assert.equal(result.archivePath,null);await assert.rejects(fs.access(path.join(f.root,'5 Archive/Working changes')));}
+  const reopened=createStore(f.root);await reopened.init();assert.equal((await reopened.getTree('variant:'+v.id)).length,0);
+  await reopened.replaceNativeWorking(v.id,'version:'+result.recoveryVersionId,await reopened.nativeWorkingToken(v.id),{archive:false});
+  assert.equal((await reopened.readFile('variant:'+v.id,f.key)).content,'My local revision');
+ });
+});
+
 test('native reset rolls back touched files when persistence fails',async t=>{
  const f=await variantFixture(t),v=await f.store.createVariant('Working','sources',{nativeWorking:true});
  const edit=await f.store.editInVariant(v.id,f.key);await fs.writeFile(path.join(f.root,edit.path),'Keep my work');

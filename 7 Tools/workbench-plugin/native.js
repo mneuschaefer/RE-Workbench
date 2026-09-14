@@ -8,6 +8,7 @@ class Confirm extends Modal {
     const list=this.contentEl.createEl('ul');
     for(const line of this.summary.lines)list.createEl('li',{text:line});
     if(this.summary.localOnly)this.contentEl.createEl('p',{text:'Local-only files will be removed when overwriting.'});
+    if(this.summary.unavailable)this.contentEl.createEl('p',{text:this.summary.unavailable+' previously known Confluence page'+(this.summary.unavailable===1?' is':'s are')+' no longer returned as current and will be removed from the working files. The recovery checkpoint keeps the previous local copy.'});
     this.contentEl.createEl('p',{text:'This will overwrite your local Markdown files. Choose whether to archive your local changes first. Attachments are left unchanged.'});
     this.contentEl.createEl('button',{text:'Compare with sources'}).onclick=()=>{this.close();this.review();};
     const actions=this.contentEl.createDiv();
@@ -113,7 +114,6 @@ class Confirm extends Modal {
     const comparison=await p.store.compare('variant:'+working.id,targetRef);
     const summary=summarizeReplacement(comparison);
     if(summary.matches){new Notice('Your local files already match the downloaded Confluence version.');return;}
-    if(summary.unavailable){new Notice('Some source files are unavailable. Compare with sources before replacing local files.');await p.openComparison();return;}
     const archiveFolder=p.settings.archiveFolder||'5 Archive/Working changes';
     new Confirm(p.app,summary,async(archive)=>{
         const result=await p.runBusy('Could not replace working files',()=>p.store.replaceNativeWorking(working.id,targetRef,token,{archive,archiveFolder}));
@@ -189,6 +189,6 @@ function summarizeReplacement(c){
   const different=new Set([...(c.changed||[]),...(c.renamed||[])]).size;
   const remoteOnly=(c.added||[]).length,localOnly=(c.removed||[]).length,unavailable=(c.missing||[]).length;
   return {different,remoteOnly,localOnly,unavailable,matches:!different&&!remoteOnly&&!localOnly&&!unavailable,
-    lines:[`${different} different file${different===1?'':'s'}`,`${remoteOnly} file${remoteOnly===1?'':'s'} only in Confluence`,`${localOnly} file${localOnly===1?'':'s'} only locally`]};
+    lines:[`${different} different file${different===1?'':'s'}`,`${remoteOnly} file${remoteOnly===1?'':'s'} only in Confluence`,`${localOnly} file${localOnly===1?'':'s'} only locally`,`${unavailable} previously known Confluence page${unavailable===1?' is':'s are'} no longer returned as current`]};
 }
 module.exports.summarizeReplacement=summarizeReplacement;

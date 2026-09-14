@@ -24,7 +24,7 @@
 - Native working files form a complete managed tree: missing files are deletions. Copies are additions. Preserve identity through `recordNativeRename`; explicit `resolveNativeRenames` handles only supported unambiguous pairs.
 - Use public `workspacePath` to open working files. Do not infer paths from source filenames or reintroduce explorer-only title overrides.
 - `rewb-id`, `rewb-source` and `rewb-import-warning` are informational Properties; internal identity remains authoritative. Do not reassign identity by editing frontmatter.
-- Replacement must use `replaceNativeWorking` with a fresh token and explicit user choice. Archive by default; `archive:false` requires explicit overwrite-without-archiving selection. Archive failures prevent replacement. Retain internal recovery even without a file archive.
+- Replacement must use `replaceNativeWorking` with a fresh token and explicit user choice. Archive by default; `archive:false` requires explicit overwrite-without-archiving selection. Archive failures prevent replacement. Retain internal recovery even without a file archive. After a successful complete download, explicit replacement removes working pages no longer returned by the source; an unsuccessful download must never trigger replacement.
 - Keep source ordering separate from article content. Use the existing optional sorting plugin and generated `7 Tools/Source order.md`; do not patch explorer sorting or encode order in filenames.
 - Legacy `2 Saved versions` projections are not sources, working files or knowledge inputs. Removing a projection must never delete history.
 

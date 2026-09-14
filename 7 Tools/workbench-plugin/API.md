@@ -47,7 +47,7 @@ Normalization removes known importer provenance for comparisons and newly materi
 
 `createVariant(name, baseRef, {nativeWorking:true})` reserves `1 Working files`; a nonempty unowned folder or existing native variant is rejected. Materialize all entries with `editInVariant` once. Native missing working files are treated as local deletions; legacy sparse-variant missing-file behavior is unchanged.
 
-`nativeWorkingToken(id)` captures current tree state. `replaceNativeWorking(id, targetRef, token)` rejects stale confirmation, saves a recovery version, then replaces tracked Markdown transactionally. The returned `recoveryVersionId` is restorable by the same operation. Non-Markdown files are untouched. Native UI confirmation is required before replacement.
+`nativeWorkingToken(id)` captures current tree state. `replaceNativeWorking(id, targetRef, token)` rejects stale confirmation, saves a recovery version, then replaces tracked Markdown transactionally. Source entries flagged as missing remain in source history but are omitted from the explicitly replaced working tree; the result reports `removedUnavailable`. The returned `recoveryVersionId` is restorable by the same operation. Empty managed directories are pruned, while non-Markdown files and their directories are untouched. Native UI confirmation is required before replacement.
 
 ### Archive before replacement
 

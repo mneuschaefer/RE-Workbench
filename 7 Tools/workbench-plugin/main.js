@@ -15,6 +15,32 @@ const DEFAULT_PUBLISH_PROMPT = "Publish the listed changes to their existing Con
 const VIEW_TYPE = 're-workbench-view';
 const TABS = ['Sources', 'Versions', 'Variants', 'Compare'];
 
+function normalizeConfluenceSite(value, configuredMode = 'auto') {
+  if (!['auto', 'cloud', 'server'].includes(configuredMode)) throw new Error('Choose a valid Confluence deployment.');
+  let url;
+  try { url = new URL(String(value || '').trim()); } catch { throw new Error('Enter a valid Confluence site URL.'); }
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) throw new Error('Use an HTTPS site URL without credentials, query or fragment.');
+  const cloudHost = /^[-a-z0-9]+\.atlassian\.net$/i.test(url.hostname);
+  const apiMode = configuredMode === 'auto' ? (cloudHost ? 'cloud' : 'server') : configuredMode;
+  if (apiMode === 'cloud' && (!cloudHost || url.port || !['', '/'].includes(url.pathname))) throw new Error('For Confluence Cloud use only the site address, such as https://example.atlassian.net');
+  const path = apiMode === 'server' && !['', '/'].includes(url.pathname) ? url.pathname.replace(/\/+$/, '') : '';
+  if (path.includes('//') || path.split('/').some(part => ['.', '..'].includes(decodeURIComponent(part)))) throw new Error('The Confluence context path is invalid.');
+  return {url, apiMode, siteUrl:url.origin + path};
+}
+
+function confluencePageId(value, site) {
+  if (/^\d+$/.test(value)) return value;
+  let page;
+  try { page = new URL(value); } catch { throw new Error('Use page IDs or Confluence page URLs.'); }
+  if (page.origin !== site.url.origin) throw new Error('Page URL belongs to another site.');
+  const basePath = new URL(site.siteUrl).pathname.replace(/\/$/, '');
+  if (basePath && page.pathname !== basePath && !page.pathname.startsWith(basePath + '/')) throw new Error('Page URL is outside the configured Confluence context path.');
+  const match = page.pathname.match(/\/pages\/(\d+)/);
+  const id = match ? match[1] : page.searchParams.get('pageId');
+  if (!id || !/^\d+$/.test(id)) throw new Error('Use page IDs or Confluence page URLs.');
+  return id;
+}
+
 function when(value) {
   return value == null ? 'Not checked' : new Date(value).toLocaleString();
 }
@@ -760,6 +786,9 @@ class WorkbenchSettingTab extends PluginSettingTab {
       const config=JSON.parse(await this.app.vault.adapter.read(configPath));
       if(revision!==this.displayRevision)return;
       containerEl.createEl('h3',{text:'Confluence source'});
+      config.apiMode=config.apiMode||'auto';
+      new Setting(containerEl).setName('Deployment').setDesc('Automatic uses Cloud for *.atlassian.net and Data Center / self-hosted for every other HTTPS host.')
+        .addDropdown(drop=>drop.addOption('auto','Automatic').addOption('cloud','Confluence Cloud').addOption('server','Data Center / self-hosted').setValue(config.apiMode).onChange(value=>config.apiMode=value));
       new Setting(containerEl).setName('Site URL').addText(text=>text.setValue(config.siteUrl).onChange(value=>config.siteUrl=value.trim()));
       new Setting(containerEl).setName('Space key').addText(text=>text.setValue(config.spaceKey).onChange(value=>config.spaceKey=value.trim()));
       new Setting(containerEl).setName('Import scope').addDropdown(drop=>drop.addOption('space','Entire space').addOption('trees','Selected pages and all descendants').addOption('pages','Only selected pages').setValue(config.scope.mode).onChange(value=>config.scope.mode=value));
@@ -767,12 +796,11 @@ class WorkbenchSettingTab extends PluginSettingTab {
       new Setting(containerEl).setName('Page IDs or page URLs').setDesc('Separate with commas or spaces. Not needed for Entire space.').addTextArea(text=>text.setValue(pageInput).onChange(value=>pageInput=value));
       new Setting(containerEl).setName('Save connection settings').setDesc('Stored only in 7 Tools/confluence-source.json. Takes effect on the next source check; working files are not replaced.').addButton(button=>button.setButtonText('Save').onClick(async()=>{
         try {
-          const url=new URL(config.siteUrl);
-          if(url.protocol!=='https:'||!/^[-a-z0-9]+\.atlassian\.net$/.test(url.hostname)||url.username||url.password||url.port||!['','/'].includes(url.pathname)||url.search||url.hash)throw Error('Use the site address only, such as https://example.atlassian.net');
+          const site=normalizeConfluenceSite(config.siteUrl,config.apiMode);
           if(!config.spaceKey)throw Error('Enter the space key.');
-          const ids=pageInput.split(/[\s,;]+/).filter(Boolean).map(value=>{if(/^\d+$/.test(value))return value;const page=new URL(value);if(page.origin!==url.origin)throw Error('Page URL belongs to another site.');const match=page.pathname.match(/\/pages\/(\d+)/);if(!match)throw Error('Use page IDs or Confluence page URLs.');return match[1];});
+          const ids=pageInput.split(/[\s,;]+/).filter(Boolean).map(value=>confluencePageId(value,site));
           if(config.scope.mode!=='space'&&!ids.length)throw Error('Select at least one page.');
-          config.siteUrl=url.origin;config.scope.pageIds=[...new Set(ids)];
+          config.siteUrl=site.siteUrl;config.scope.pageIds=[...new Set(ids)];
           await this.app.vault.adapter.write(configPath,JSON.stringify(config,null,2)+'\n');new Notice('Source selection saved. Choose Update from sources when ready.');
         }catch(e){new Notice(e.message);}
       }));

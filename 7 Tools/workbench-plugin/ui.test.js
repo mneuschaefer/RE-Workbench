@@ -10,11 +10,29 @@ function loadUI() {
   class ItemView { constructor(leaf) { this.leaf = leaf; } }
   class Modal { constructor(app) { this.app = app; } }
   const notices = [];
-  const context = { module: {exports:{}}, console, setTimeout, clearTimeout,
+  const context = { module: {exports:{}}, console, setTimeout, clearTimeout, URL, decodeURIComponent,
     require: name => name === 'obsidian' ? {Plugin,ItemView,Modal,Notice:class {constructor(text){notices.push(text);}},PluginSettingTab:class{},Setting:class{},MarkdownRenderer:{},setIcon(){}} : require(name) };
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'main.js'),'utf8')+'\nmodule.exports = {Plugin:module.exports, WorkbenchView};',context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'main.js'),'utf8')+'\nmodule.exports = {Plugin:module.exports, WorkbenchView, normalizeConfluenceSite, confluencePageId};',context);
   return {...context.module.exports,notices};
 }
+test('Confluence deployment routes automatically from the site host',()=>{
+ const {normalizeConfluenceSite}=loadUI();
+ assert.equal(normalizeConfluenceSite('https://demo.atlassian.net','auto').apiMode,'cloud');
+ const server=normalizeConfluenceSite('https://wiki.example.com/confluence/','auto');
+ assert.equal(server.apiMode,'server');assert.equal(server.siteUrl,'https://wiki.example.com/confluence');
+});
+test('explicit Cloud routing rejects a self-hosted URL',()=>{
+ const {normalizeConfluenceSite}=loadUI();
+ assert.throws(()=>normalizeConfluenceSite('https://wiki.example.com','cloud'),/Confluence Cloud/);
+});
+test('page IDs are read from Cloud and self-hosted URL forms',()=>{
+ const {normalizeConfluenceSite,confluencePageId}=loadUI();
+ const cloud=normalizeConfluenceSite('https://demo.atlassian.net','auto');
+ assert.equal(confluencePageId('https://demo.atlassian.net/wiki/spaces/X/pages/123456/Title',cloud),'123456');
+ const server=normalizeConfluenceSite('https://wiki.example.com/confluence','auto');
+ assert.equal(confluencePageId('https://wiki.example.com/confluence/pages/viewpage.action?pageId=654321',server),'654321');
+ assert.throws(()=>confluencePageId('https://wiki.example.com/other/pages/123456',server),/outside/);
+});
 test('switching Sources and Versions retains the selected version, file and search',()=>{
  const {WorkbenchView}=loadUI();const view=new WorkbenchView({},{});
  view.setTab('Versions');view.ref='version:second';view.selectedKey='page:2';view.search='review';

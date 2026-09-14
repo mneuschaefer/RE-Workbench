@@ -4,14 +4,14 @@
 
 ## Setup checklist
 
-This public beta assumes basic Obsidian knowledge, access to the project's Confluence Cloud space and an active AI agent with an advanced model, local file access and tool execution for guided setup. Accounts and models are not included. Manual setup is available for users comfortable following the technical steps. macOS is the supported setup; other platforms need adaptation and testing.
+This public beta assumes basic Obsidian knowledge, access to the project's Confluence Cloud or Data Center/self-hosted space and an active AI agent with an advanced model, local file access and tool execution for guided setup. Accounts and models are not included. Manual setup is available for users comfortable following the technical steps. macOS is the supported setup; other platforms need adaptation and testing.
 
 - Use a dedicated vault for one collaborative project and one Confluence space. Do not install the Workbench into a general-purpose or multi-project vault.
 
 - Install desktop Obsidian, Git, Node.js and Python 3 on macOS. Check that `git --version`, `node --version` and `python3 --version` work in Terminal.
 - Install the bundled RE Workbench plugin and Python dependencies using the commands below.
 - Open this folder as an Obsidian vault and enable RE Workbench under **Settings → Community plugins**.
-- Install and configure the **Demo workspace profile** below: Custom File Explorer sorting, File Color and Commander alongside RE Workbench. Respect explicit opt-outs.
+- On a fresh vault, install and configure the **Demo workspace profile** below: Custom File Explorer sorting, File Color and Commander alongside RE Workbench. Respect explicit opt-outs and preserve every existing optional-plugin choice on later runs.
 - Keep **Show inline title** on and **Properties in document** visible under **Settings → Editor**.
 - If you want to insert templates manually, enable Obsidian's core **Templates** plugin and set its folder to `2 Templates`.
 - Set up your Confluence selection and Keychain item with the [Confluence workflow skill](Skills/confluence-workflow/SKILL.md). Test reading before the first import.
@@ -37,14 +37,14 @@ RE Workbench handles imports, comparison and archives. Use the demo workspace pr
 | --- | --- | --- |
 | **RE Workbench** (`re-workbench-local`) | Required for the Workbench actions. | Install from this repository using the command above. |
 | [Custom File Explorer sorting](https://github.com/SebastianMC/obsidian-custom-sort) (`custom-sort`) | Recommended to keep files and folders in Confluence order. | Set the additional sorting specification file to `7 Tools/Source order.md` and enable sorting. RE Workbench generates this file when applying source order. |
-| [File Color](https://github.com/ecustic/obsidian-file-color) (`obsidian-file-color`) | Optional: gently highlight the working area. | Apply the supplied preset only to `1 Working files`, with background colouring and inheritance. All other folders stay uncoloured. |
+| [File Color](https://github.com/ecustic/obsidian-file-color) (`obsidian-file-color`) | Optional: gently highlight the working area. | On first setup only, apply the supplied preset to `1 Working files` when the user has no existing colour choice. Never replace an existing assignment or re-enable an intentionally disabled or removed plugin. |
 | [Commander](https://github.com/phibr0/obsidian-commander) (`cmdr`) | Optional if you want buttons for frequent actions. | Apply the five editor buttons from the demo workspace profile below. |
 
-File Color is optional. The demo highlights only `1 Working files` and its contents in blue. Change the colour in the File Color plugin settings to suit your preferences; the other folders keep their normal appearance.
+File Color is optional. The initial demo preset highlights only `1 Working files` and its contents in blue. Change or remove the colour in the File Color plugin settings to suit your preferences; the other folders keep their normal appearance. RE Workbench does not manage File Color at runtime, so installing or reloading Workbench and running **Update from sources** leave those choices unchanged.
 
 [Obsidian defaults](obsidian-defaults.json) contains the preset for repeatable setup. The highlight identifies the working area; change labels indicate actual edits. All Workbench functions work without colour.
 
-The current demo used Custom File Explorer sorting 3.2.0 and File Color 1.1.0. These are reference versions, not a compatibility guarantee for every theme or future version. RE Workbench can compare and archive without them; disabling sorting returns the explorer to its normal order. New local files without a source position sort alphabetically. The generated order file may flag names the sorting plugin cannot represent.
+The current demo used Custom File Explorer sorting 3.2.0 and File Color 1.1.0. These are reference versions, not a compatibility guarantee for every theme or future version. RE Workbench can compare and archive without them; disabling sorting returns the explorer to its normal order. New local files without a source position sort alphabetically. The generated order file treats a page note and its same-named child folder as one ordering item, so they stay adjacent in the explorer. When a Data Center/self-hosted API does not expose non-negative page positions, RE Workbench preserves the order returned by the parent's child-page endpoint. The generated order file may flag names the sorting plugin cannot represent.
 
 QuickAdd, File Diff and Read-only View are not needed for this setup. A custom theme, icon plugin and CSS snippets are also optional; the starter does not bundle them. Folder colours do not protect files from edits.
 
@@ -52,16 +52,16 @@ For optional writing, diagramming and image tools, see [recommended extras for R
 
 ## Demo workspace profile
 
-For setup like the demo, install and enable **RE Workbench**, **Custom File Explorer sorting**, **File Color** and **Commander**. Use this profile for the README setup request unless the user asks for a minimal setup or declines a visual option. These are four plugins; installing them alone does not apply their settings. File Color remains optional for users who do not want colour, and Commander is optional for users who do not want editor buttons.
+For a fresh setup like the demo, install and enable **RE Workbench**, **Custom File Explorer sorting**, **File Color** and **Commander**. Use this profile for the first README setup request unless the user asks for a minimal setup or declines a visual option. These are four plugins; installing them alone does not apply their settings. On every later setup or update run, treat the current state of optional plugins as the user's choice: do not reinstall, re-enable or reset them. File Color remains optional for users who do not want colour, and Commander is optional for users who do not want editor buttons.
 
 Apply [obsidian-defaults.json](obsidian-defaults.json) after installing the plugins:
 
 - `plugins.custom-sort`: additional sorting specification = `7 Tools/Source order.md`; sorting enabled (`suspended: false`); automatic bookmark ordering off. After Workbench generates the file, run **Custom File Explorer sorting: Enable custom sorting** from the command palette. Do not hand-edit generated page rules.
-- `plugins.obsidian-file-color`: merge the palette entry and the assignment for `1 Working files`; enable background colour and inheritance. Only that working tree gets the muted blue-grey highlight.
+- `plugins.obsidian-file-color`: only when configuring a fresh vault with no existing File Color preference, add the palette entry and assignment for `1 Working files`, then enable background colour and inheritance. If the plugin already has any assignment for `1 Working files`, preserve its colour, palette, inheritance and background choices. If File Color is disabled, absent or has no assignment because the user removed it, leave that state unchanged on later runs.
 - `plugins.cmdr`: add the five `pageHeader` entries in the supplied order: **Heading**, **Bold**, **Italic**, **List**, **Link**. These map to native editor commands. Preserve existing buttons and avoid duplicate command IDs. Workbench supplies its own actions; do not add another set of Workbench buttons by default.
 - `editor`: apply to Obsidian's editor settings, with inline title on and Properties visible. Enable core **Files** for the left explorer and core **Templates** with folder `2 Templates` if templates are wanted.
 
-The JSON is a configuration reference, not an Obsidian auto-import file. Prefer the installed plugins' settings UI. For offline configuration, close Obsidian first, back up existing settings, then merge each `plugins.<id>` object into `.obsidian/plugins/<id>/data.json` and the `editor` object into `.obsidian/app.json`. Merge arrays by command ID, palette ID or folder path; never replace unrelated personal settings. Reopen the vault and verify the result. Do not copy another vault's entire `.obsidian` directory or its workspace layout.
+The JSON is a first-setup configuration reference, not an Obsidian auto-import file. Prefer the installed plugins' settings UI. For offline configuration of a fresh vault, close Obsidian first, back up existing settings, then merge only settings for which the user has no prior choice. Never apply the File Color object when its configuration already exists or when the plugin is intentionally disabled or absent. Merge arrays by command ID, palette ID or folder path; never replace unrelated personal settings. Reopen the vault and verify the result. Do not copy another vault's entire `.obsidian` directory or its workspace layout.
 
 ### What the development vault has installed
 
@@ -101,8 +101,8 @@ Rename and move notes normally within `1 Working files`. For files renamed while
 
 The setup skill creates two local files:
 
-- `7 Tools/confluence-source.json`: site URL, space key and selected pages. The plugin's **Confluence source** settings edit the same file.
-- `7 Tools/.local/confluence.json`: email, credential-helper path and credential-store references. It contains no token.
+- `7 Tools/confluence-source.json`: site URL, deployment routing, space key and selected pages. The plugin's **Confluence source** settings edit the same file. Automatic routing selects Cloud for `*.atlassian.net` and Data Center/self-hosted for other HTTPS hosts.
+- `7 Tools/.local/confluence.json`: optional Cloud account email, credential-helper path and credential-store references. It contains no token. The email is required only for Cloud; self-hosted access uses the stored token as a Bearer token.
 
 The starter supplies `keychain-helper.sh` for macOS Keychain. It implements the launcher's existing helper contract; the environment variable names beginning with `BWS_` are retained for compatibility and do not require Bitwarden. Existing installations may keep their trusted helper.
 

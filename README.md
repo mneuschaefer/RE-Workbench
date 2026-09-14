@@ -68,11 +68,11 @@ Preparing a prompt does not publish; sending it authorizes the listed existing-p
 1. Clone this repository or use **Code → Download ZIP** and extract it.
 2. Open the folder in an AI assistant with access to local files and tools, then send:
 
-   > Read AGENTS.md and follow 7 Tools/Skills/confluence-workflow/SKILL.md to set up this vault. Help me connect my Confluence space and test a small read-only import.
+   > Read AGENTS.md and follow 7 Tools/Skills/confluence-workflow/SKILL.md to set up this vault. Apply the Demo workspace profile in 7 Tools/README.md, including Custom File Explorer sorting, File Color and Commander with their presets. Verify the sidebar and editor buttons in Obsidian, not just the plugin list. Help me connect my Confluence space and test reading without changing existing working files. Report passed, failed and untested setup checks.
 
 3. Follow the setup guidance, then open the folder as a vault in Obsidian and enable RE Workbench.
 
-The download is an empty starter; setup installs the dependencies.
+The download is an empty starter; setup installs the dependencies. The [demo workspace profile](7%20Tools/README.md#demo-workspace-profile) lists the plugins, exact settings and visible checks needed to reproduce the navigation and editor toolbar.
 
 To work with an existing Confluence collection, run **Update from sources**, review the download and confirm copying it into the working files. Edit under `1 Working files/Confluence` and use **Compare with sources** to inspect changes.
 

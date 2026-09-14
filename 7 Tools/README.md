@@ -11,7 +11,7 @@ This public beta assumes basic Obsidian knowledge, access to the project's Confl
 - Install desktop Obsidian, Git, Node.js and Python 3 on macOS. Check that `git --version`, `node --version` and `python3 --version` work in Terminal.
 - Install the bundled RE Workbench plugin and Python dependencies using the commands below.
 - Open this folder as an Obsidian vault and enable RE Workbench under **Settings → Community plugins**.
-- Install **Custom File Explorer sorting** through Community plugins. **File Color** is optional. Configure any installed plugins as described below.
+- Install and configure the **Demo workspace profile** below: Custom File Explorer sorting, File Color and Commander alongside RE Workbench. Respect explicit opt-outs.
 - Keep **Show inline title** on and **Properties in document** visible under **Settings → Editor**.
 - If you want to insert templates manually, enable Obsidian's core **Templates** plugin and set its folder to `2 Templates`.
 - Set up your Confluence selection and Keychain item with the [Confluence workflow skill](Skills/confluence-workflow/SKILL.md). Test reading before the first import.
@@ -31,14 +31,14 @@ The installer creates `1 Working files` if absent and copies this project's runt
 
 ## Recommended Obsidian plugins
 
-RE Workbench handles imports, comparison and archives. Custom File Explorer sorting is recommended; File Color and Commander are optional. Install these third-party plugins through **Settings → Community plugins → Browse**. RE Workbench itself is installed from this repository.
+RE Workbench handles imports, comparison and archives. Use the demo workspace profile below for guided setup; File Color and Commander remain optional when the user prefers a minimal UI. Install these third-party plugins through **Settings → Community plugins → Browse**. RE Workbench itself is installed from this repository.
 
 | Plugin | Include it when | Setup |
 | --- | --- | --- |
 | **RE Workbench** (`re-workbench-local`) | Required for the Workbench actions. | Install from this repository using the command above. |
 | [Custom File Explorer sorting](https://github.com/SebastianMC/obsidian-custom-sort) (`custom-sort`) | Recommended to keep files and folders in Confluence order. | Set the additional sorting specification file to `7 Tools/Source order.md` and enable sorting. RE Workbench generates this file when applying source order. |
 | [File Color](https://github.com/ecustic/obsidian-file-color) (`obsidian-file-color`) | Optional: gently highlight the working area. | Apply the supplied preset only to `1 Working files`, with background colouring and inheritance. All other folders stay uncoloured. |
-| [Commander](https://github.com/phibr0/obsidian-commander) (`cmdr`) | Optional if you want buttons for frequent actions. | Add **Compare with sources**, **Update from sources** and **Archive working files** to your preferred toolbar. The command palette already provides these actions. |
+| [Commander](https://github.com/phibr0/obsidian-commander) (`cmdr`) | Optional if you want buttons for frequent actions. | Apply the five editor buttons from the demo workspace profile below. |
 
 File Color is optional. The demo highlights only `1 Working files` and its contents in blue. Change the colour in the File Color plugin settings to suit your preferences; the other folders keep their normal appearance.
 
@@ -49,6 +49,47 @@ The current demo used Custom File Explorer sorting 3.2.0 and File Color 1.1.0. T
 QuickAdd, File Diff and Read-only View are not needed for this setup. A custom theme, icon plugin and CSS snippets are also optional; the starter does not bundle them. Folder colours do not protect files from edits.
 
 For optional writing, diagramming and image tools, see [recommended extras for RE and BA work](../README.md#recommended-extras-for-re-and-ba-work). The list separates AI-agent skills from Obsidian plugins; these are recommendations, not setup dependencies.
+
+## Demo workspace profile
+
+For setup like the demo, install and enable **RE Workbench**, **Custom File Explorer sorting**, **File Color** and **Commander**. Use this profile for the README setup request unless the user asks for a minimal setup or declines a visual option. These are four plugins; installing them alone does not apply their settings. File Color remains optional for users who do not want colour, and Commander is optional for users who do not want editor buttons.
+
+Apply [obsidian-defaults.json](obsidian-defaults.json) after installing the plugins:
+
+- `plugins.custom-sort`: additional sorting specification = `7 Tools/Source order.md`; sorting enabled (`suspended: false`); automatic bookmark ordering off. After Workbench generates the file, run **Custom File Explorer sorting: Enable custom sorting** from the command palette. Do not hand-edit generated page rules.
+- `plugins.obsidian-file-color`: merge the palette entry and the assignment for `1 Working files`; enable background colour and inheritance. Only that working tree gets the muted blue-grey highlight.
+- `plugins.cmdr`: add the five `pageHeader` entries in the supplied order: **Heading**, **Bold**, **Italic**, **List**, **Link**. These map to native editor commands. Preserve existing buttons and avoid duplicate command IDs. Workbench supplies its own actions; do not add another set of Workbench buttons by default.
+- `editor`: apply to Obsidian's editor settings, with inline title on and Properties visible. Enable core **Files** for the left explorer and core **Templates** with folder `2 Templates` if templates are wanted.
+
+The JSON is a configuration reference, not an Obsidian auto-import file. Prefer the installed plugins' settings UI. For offline configuration, close Obsidian first, back up existing settings, then merge each `plugins.<id>` object into `.obsidian/plugins/<id>/data.json` and the `editor` object into `.obsidian/app.json`. Merge arrays by command ID, palette ID or folder path; never replace unrelated personal settings. Reopen the vault and verify the result. Do not copy another vault's entire `.obsidian` directory or its workspace layout.
+
+### What the development vault has installed
+
+| Plugin / appearance | Role in the current development vault | Fresh setup |
+| --- | --- | --- |
+| RE Workbench (`re-workbench-local`) | Working-file actions, status labels and hiding the duplicate Sources tree after native mode initializes. | Required. |
+| Custom File Explorer sorting (`custom-sort`) | Imported page and folder order. | Include in demo profile. |
+| File Color (`obsidian-file-color`) | Subtle working-tree background. | Include in demo profile; user may omit. |
+| Commander (`cmdr`, reference version 0.5.12) | Five editing buttons above notes. | Include in demo profile; user may omit. |
+| File Diff (`file-diff`) | Earlier separate comparison workflow. | Legacy; Workbench already compares sources. |
+| QuickAdd (`quickadd`) | Earlier compare/import macros. | Legacy; do not recreate old macros. |
+| Read-only View (`read-only-view`) | Reading-mode convenience for source notes. | Not required for working mode; not filesystem protection. |
+| Obsidian Nord theme | Development vault appearance. | Optional under Appearance → Themes; preserve the user's theme unless matching Nord is requested. |
+| `rewb-demo` CSS snippet | Presentation-note formatting in the development vault. | Not needed for explorer order, working-file hiding or editor buttons. |
+
+Folder Notes and icon plugins are not installed in this reference vault. They are not missing setup dependencies. Theme, fonts and operating-system rendering can change the appearance; installing all seven development plugins does not recreate the UI by itself.
+
+### Verify the visible result
+
+Do not report setup complete based only on the installed-plugin list. Record each check as passed, failed or not tested:
+
+1. RE Workbench is **enabled and loaded**, and **Open working files**, **Compare with sources**, **Update from sources**, **Archive working files** and **Reconnect renamed files** appear in the command palette.
+2. The installer has created `1 Working files`. In active native working mode, `1 Sources` and legacy `3 Drafts` are hidden. The numbered visible folders appear as `1 Working files`, `2 Templates`, `4 Notes`, `5 Archive`, `6 Import log`, `7 Tools` with normal name sorting. Repository support files such as `assets`, `AGENTS`, `CLAUDE` and `README` can remain visible; no extra hiding plugin is required.
+3. After an authorized import and accepted working-file creation, `1 Working files/Confluence` contains editable notes. Compare a known sibling sequence with Confluence and confirm that `7 Tools/Source order.md` exists and custom sorting is active. An empty starter cannot prove source ordering; mark that check pending rather than manufacturing source content.
+4. A working note shows the five Commander buttons in order, its inline title and Properties. If File Color is used, the working folder and descendants have the subtle background in the user's theme, including hover and selection.
+5. Open **Compare with sources** and confirm it loads. A read-only connection dry-run and a configured UI are separate checks; report both accurately.
+
+If `1 Sources` is visible while `1 Working files` is missing, check the target vault path, rerun the local installer, enable/reload RE Workbench and inspect its startup error and Git availability. An installed plugin may not have initialized. Do not fix this by renaming Sources, manually copying source files, altering history or installing more appearance plugins. If the working folder exists but is empty, distinguish an empty starter from a failed import; first import/replacement still follows the normal review flow.
 
 ## Working-file details
 

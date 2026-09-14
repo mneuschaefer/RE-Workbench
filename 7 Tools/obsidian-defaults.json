@@ -21,6 +21,41 @@
       "additionalSortspecFile": "7 Tools/Source order.md",
       "suspended": false,
       "automaticBookmarksIntegration": false
+    },
+    "cmdr": {
+      "pageHeader": [
+        {
+          "id": "editor:set-heading-2",
+          "name": "Heading",
+          "icon": "heading-2",
+          "mode": "any"
+        },
+        {
+          "id": "editor:toggle-bold",
+          "name": "Bold",
+          "icon": "bold",
+          "mode": "any"
+        },
+        {
+          "id": "editor:toggle-italics",
+          "name": "Italic",
+          "icon": "italic",
+          "mode": "any"
+        },
+        {
+          "id": "editor:toggle-bullet-list",
+          "name": "List",
+          "icon": "list",
+          "mode": "any"
+        },
+        {
+          "id": "editor:insert-link",
+          "name": "Link",
+          "icon": "link",
+          "mode": "any"
+        }
+      ],
+      "showAddCommand": false
     }
   },
   "editor": {

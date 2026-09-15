@@ -10,8 +10,8 @@ class Confirm extends Modal {
     if(this.summary.localOnly)this.contentEl.createEl('p',{text:'Local-only files will be removed when overwriting.'});
     if(this.summary.unavailable)this.contentEl.createEl('p',{text:this.summary.unavailable+' previously known Confluence page'+(this.summary.unavailable===1?' is':'s are')+' no longer returned as current and will be removed from the working files. The recovery checkpoint keeps the previous local copy.'});
     this.contentEl.createEl('p',{text:'This will overwrite your local Markdown files. Choose whether to archive your local changes first. Attachments are left unchanged.'});
-    this.contentEl.createEl('button',{text:'Compare with sources'}).onclick=()=>{this.close();this.review();};
-    const actions=this.contentEl.createDiv();
+    this.contentEl.createDiv({cls:'rewb-replace-review'}).createEl('button',{text:'Compare with sources'}).onclick=()=>{this.close();this.review();};
+    const actions=this.contentEl.createDiv({cls:'rewb-replace-actions'});
     const buttons=[];
     const add=(text,archive,cls)=>{
       const button=actions.createEl('button',{text,cls});buttons.push(button);
@@ -19,7 +19,7 @@ class Confirm extends Modal {
     };
     add('Archive changes, then overwrite',true,'mod-cta');
     add('Overwrite without archiving',false,'mod-warning');
-    const cancel=actions.createEl('button',{text:'Cancel'});buttons.push(cancel);cancel.onclick=()=>this.close();
+    const cancel=actions.createEl('button',{text:'Cancel',cls:'rewb-replace-cancel'});buttons.push(cancel);cancel.onclick=()=>this.close();
     this.contentEl.createEl('p',{text:'Cancel keeps your local files unchanged. Downloaded sources remain available for comparison.'});
     this.contentEl.createEl('p',{text:'Changed local files are archived under '+this.archiveFolder+'. An internal recovery checkpoint is retained in both cases.'});
   }

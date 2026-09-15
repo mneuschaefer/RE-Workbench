@@ -250,3 +250,9 @@
 .rewb-diff-columns:first-child { margin-top: 0; }
 
 .rewb-publish-prompt { width: 100%; resize: vertical; margin-bottom: var(--size-4-3); }
+
+/* Keep replacement choices distinct at every dialog width. */
+.rewb-replace-review { margin-block: 16px; }
+.rewb-replace-actions { display: flex; flex-direction: column; gap: 12px; }
+.rewb-replace-actions > button { width: 100%; height: auto; min-height: 36px; margin: 0; padding: 8px 12px; white-space: normal; }
+.rewb-replace-actions > .rewb-replace-cancel { align-self: flex-end; width: auto; margin-block-start: 4px; }

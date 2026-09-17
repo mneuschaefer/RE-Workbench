@@ -81,13 +81,27 @@ test('editor status distinguishes an opened copy from changed and added content'
  result={changed:[],added:['p']};await p.updateEditorStatus(banner,variant,file);assert.equal(banner.dataset.status,'added');
 });
 
-test('native comparison fixes current sources and working files and selects the active file',async()=>{
+test('native comparison opens before saving and syncing, then renders the current working file',async()=>{
  const {Plugin}=loadUI();const p=new Plugin();p.nativeWorking={id:'working'};
- const view={compareLeft:'version:old',compareRight:'version:older',render:async()=>{}};
- p.app={workspace:{getActiveFile:()=>({path:'1 Working files/Confluence/Topic/A.md'})}};
- p.store={getTree:async()=>[{key:'page:1',path:'1 Sources/Confluence/RE Workbench/Topic/A.md'}]};
- p.openView=async()=>{};p.activeView=()=>view;
- await p.openComparison();assert.equal(view.compareLeft,'sources');assert.equal(view.compareRight,'variant:working');assert.equal(view.selectedKey,'page:1');
+ const events=[];let finishSave;const save=new Promise(resolve=>{finishSave=resolve;});
+ const view={compareLeft:'version:old',compareRight:'version:older',showLoading:()=>events.push('loading'),render:async()=>events.push('render')};
+ p.app={workspace:{activeLeaf:{view:{save:()=>{events.push('save');return save;}}},getActiveFile:()=>({path:'1 Working files/Confluence/Topic/A.md'})}};
+ p.store={getTree:async()=>{events.push('sync');return [{key:'page:1',path:'1 Sources/Confluence/RE Workbench/Topic/A.md'}];}};
+ p.openView=async(_tab,options)=>{assert.equal(options.render,false);events.push('open');return view;};
+ const opening=p.openComparison();await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(events,['save','open','loading']);
+ finishSave();await opening;
+ assert.deepEqual(events,['save','open','loading','sync','render']);
+ assert.equal(view.compareLeft,'sources');assert.equal(view.compareRight,'variant:working');assert.equal(view.selectedKey,'page:1');
+});
+test('a working-file save failure stays visible in the opened comparison',async()=>{
+ const {Plugin,notices}=loadUI();const p=new Plugin();p.nativeWorking={id:'working'};
+ const failure=Error('Could not save active file');let shown=null;
+ const view={showLoading(){},showError:error=>{shown=error;}};
+ p.app={workspace:{activeLeaf:{view:{save:async()=>{throw failure;}}},getActiveFile:()=>({path:'1 Working files/Confluence/A.md'})}};
+ p.openView=async()=>view;
+ await p.openComparison();
+ assert.equal(shown,failure);assert.ok(notices.includes('Could not open comparison: Could not save active file'));
 });
 test('file export UI is removed',()=>{const {Plugin}=loadUI();assert.equal(Plugin.prototype.exportChanges,undefined);assert.equal(Plugin.prototype.writeExport,undefined);});
 

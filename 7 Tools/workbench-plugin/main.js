@@ -255,6 +255,26 @@ class WorkbenchView extends ItemView {
     await this.render();
   }
 
+  showLoading() {
+    this.renderRevision += 1;
+    const root = this.contentEl;
+    root.empty();
+    root.addClass('rewb-view');
+    this.tab = 'Compare';
+    const body = root.createDiv({ cls: 'rewb-body' });
+    this.renderSkeleton(body);
+  }
+
+  showError(error) {
+    this.renderRevision += 1;
+    const root = this.contentEl;
+    root.empty();
+    root.addClass('rewb-view');
+    this.tab = 'Compare';
+    const body = root.createDiv({ cls: 'rewb-body' });
+    this.renderError(body, error);
+  }
+
   async render() {
     const revision = ++this.renderRevision;
     const root = this.contentEl;
@@ -914,24 +934,39 @@ module.exports = class ReWorkbenchPlugin extends Plugin {
   async openComparison() {
     const ref = this.nativeWorking ? 'variant:'+this.nativeWorking.id : this.activeRef();
     const file=this.app.workspace.getActiveFile();
-    let key=null;
-    if(this.nativeWorking && file){const tree=await this.store.getTree(ref);key=tree.find(e=>(e.workspacePath||('1 Working files/'+e.path.replace(/^1 Sources\//,'').replace(/^Confluence\/RE Workbench\//,'Confluence/')))===file.path)?.key;}
-    await this.openView('Compare');
-    const view = this.activeView();
-    if (view && ref?.startsWith('variant:')) {
-      view.compareInitialized = true;
-      view.compareRight = ref;
-      view.compareLeft = 'sources';
-      if(key)view.selectedKey=key;
-      await view.render();
-    } else if (view && ref) {
-      view.compareInitialized = true;
-      view.compareRight = ref;
-      if (view.compareLeft === ref) {
-        const versions = await this.store.listVersions();
-        view.compareLeft = versions.map(v => 'version:' + v.id).find(value => value !== ref) || 'sources';
+    const editorView=this.app.workspace.activeLeaf?.view;
+    let saveResult=Promise.resolve({error:null});
+    if(this.nativeWorking&&file?.path.startsWith('1 Working files/')&&typeof editorView?.save==='function') {
+      try{saveResult=Promise.resolve(editorView.save()).then(()=>({error:null}),error=>({error}));}
+      catch(error){saveResult=Promise.resolve({error});}
+    }
+    let view=null;
+    try {
+      view=await this.openView('Compare',{render:false});
+      if(!view)throw new Error('The comparison view is unavailable.');
+      view.showLoading();
+      const saved=await saveResult;
+      if(saved.error)throw saved.error;
+      let key=null;
+      if(this.nativeWorking&&file){const tree=await this.store.getTree(ref);key=tree.find(e=>(e.workspacePath||('1 Working files/'+e.path.replace(/^1 Sources\//,'').replace(/^Confluence\/RE Workbench\//,'Confluence/')))===file.path)?.key;}
+      if (ref?.startsWith('variant:')) {
+        view.compareInitialized = true;
+        view.compareRight = ref;
+        view.compareLeft = 'sources';
+        if(key)view.selectedKey=key;
+      } else if (ref) {
+        view.compareInitialized = true;
+        view.compareRight = ref;
+        if (view.compareLeft === ref) {
+          const versions = await this.store.listVersions();
+          view.compareLeft = versions.map(v => 'version:' + v.id).find(value => value !== ref) || 'sources';
+        }
       }
       await view.render();
+    } catch(error) {
+      console.error('Could not open current comparison',error);
+      new Notice('Could not open comparison: '+(error.message||String(error)));
+      view?.showError(error);
     }
   }
 
@@ -952,7 +987,7 @@ module.exports = class ReWorkbenchPlugin extends Plugin {
     return `Current source snapshot: ${this.state.sourceSnapshotId ? 'available' : 'not available'}. ${this.state.versionCount || 0} versions, ${this.state.variantCount || 0} variants. Last checked: ${when(this.lastChecked)}.`;
   }
 
-  async openView(tab) {
+  async openView(tab, options = {}) {
     tab = 'Compare';
     let leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE)[0];
     if (!leaf) {
@@ -963,8 +998,10 @@ module.exports = class ReWorkbenchPlugin extends Plugin {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
     if (tab && leaf.view instanceof WorkbenchView) {
       leaf.view.setTab(tab);
-      await leaf.view.render();
+      if(options.render!==false)await leaf.view.render();
+      return leaf.view;
     }
+    return null;
   }
 
   decorateEditors() {

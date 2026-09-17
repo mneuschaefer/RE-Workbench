@@ -23,3 +23,9 @@ Test commands are in [technical setup](README.md#verify-a-development-copy).
 - Imported source snapshots retain missing-page traceability. API failures abort before replacement; no publication was performed.
 
 The integrated local plugin was installed and reloaded in Obsidian. All five Workbench commands were registered, the Sources folder was hidden in native mode, and Compare with sources opened successfully in the empty starter. This check did not import or replace content. JavaScript syntax, configuration JSON, local documentation links and diff whitespace checks passed.
+
+## Current comparison after local edits
+
+- Compare with sources saves the active working editor, reveals the comparison before serialized working-tree synchronization completes, and then renders the current local state against the latest downloaded source reference.
+- The editor action and sidebar ribbon use the same guarded path. Save or synchronization failures remain visible in the opened comparison and as an Obsidian notice.
+- The focused ordering and error tests pass alongside all 84 Node tests and 26 Python importer tests. The installed development-vault plugin was reloaded and both entry points were checked in Obsidian 1.14.1. The exact public candidate was then installed in the empty public vault and its ribbon action opened Compare with sources successfully. Working and source content remained unchanged.
